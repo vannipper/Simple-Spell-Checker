@@ -1,0 +1,266 @@
+Script started on Fri 07 Apr 2023 11:24:26 AM EDT
+]0;nipper_cv@cobra:~/CSC245/Proj/Proj3[?1034h[nipper_cv@cobra Proj3]$ cat spellChecl.[K[Kk.cpp
+using namespace std;
+
+#include <iostream>
+#include <sstream>
+#include <cctype>
+#include <vector>
+#include "HashTable.h"
+#include "BinarySearchTree.h"
+
+/////////////////////////// BINARY SEARCH TREE DEFINITION FOR MISSPELLED WORDS
+struct BNode {
+	string word;
+	int lineNum;
+	bool operator < (BNode otherStruct) const {
+		return (word < otherStruct.word);
+	}
+};
+
+ostream & operator << (ostream & out, BNode & temp) {
+	out << temp.word << " " << temp.lineNum;
+	return out;
+}
+typedef BinarySearchTree<BNode> BST;
+
+int main (int argc, char *argv[]) {
+
+/////////////////////////// READ DICT INTO HASH TABLE
+	ifstream dictionaryIn; string newLine; int linenum;
+	dictionaryIn.open("dict.txt");
+	
+	vector<string> dict; //pointer to dictionary linked list.
+	while (dictionaryIn >> newLine) {
+		dict.push_back(newLine);
+	}
+	dictionaryIn.close();
+
+	linenum = dict.size();
+	HashTable words(linenum); //will create a hash table of size linenum*2
+	HashTable ignore(linenum/2); //for ignore
+
+	for (int i = 0; i < dict.size(); i++)
+		words.insert(dict.at(i));
+
+/////////////////////////// FIND MISPELLED WORD
+	bool run = true; linenum = 0; string msword; //for run loop
+	bool selection; string input; char c; //for selection loop
+        BNode nf = {"ZZZ", -1}; BST myBST(nf); //for BST
+
+	ifstream fileIn;
+	fileIn.open(argv[1]);
+
+	while (run && getline(fileIn, newLine)) { //reads in line-by-line
+		linenum++;
+		istringstream newWords(newLine);
+
+		while (run && newWords >> msword) { //reads in word-by-word
+			selection = true; //by default
+			for (int i = 0; i < msword.size(); i++) { //formats msword and checks if it is a number
+				msword[i] = tolower(msword[i]);
+				if (isalpha(msword[i]) == 0)
+					msword.erase(i);
+			}
+			if (msword.size() == 0)
+				selection = false;
+
+			else if (words.find(msword))
+				selection = false;
+
+			else if (ignore.find(msword))
+				selection = false;
+
+			else { //insert into bst if the word is not found.
+				BNode bN = {msword, linenum};
+				if (myBST.find(bN).word == "ZZZ") {
+					myBST.insert(bN);
+				}
+			}
+
+/////////////////////////// MAIN
+			while (selection) {
+				selection = false;
+				cout << "\033[2J\033[1;1H";
+				cout << "!@#$%^&*(){} THE SPELL CHECKER PROGRAM !@#$%^&*(){}" << endl << endl;
+				cout << msword << " on line " << linenum << " was not found in dictionary." << endl << endl;
+				cout << "A) Add the Word To Dictionary" << endl;
+				cout << "I) Ignore Word, and Skip Future References" << endl;
+				cout << "G) Go On To Next Word" << endl;
+				cout << "S) Search For A Suggested Spelling" << endl;
+				cout << "Q) Quit Spell Checking File" << endl << endl;
+				cout << "Selection : ";
+				getline(cin, input);
+				c = toupper(input[0]);
+
+				switch (c) {
+					case ('A'): //add to dictionary
+						ignore.insert(msword); //will ignore all future cases
+						dict.push_back(msword); //adds to end of dictionary
+						break;
+
+					case ('I'): //ignore all future cases
+						ignore.insert(msword);
+						break;
+
+					case ('G'): //go to next word (ignore)
+						break;
+
+					case ('S'): //search for suggested correction
+						cout << endl << "Suggested Spelling : ";
+						for (int i = 0; i < (msword.size() - 1); i++) {
+							string check = msword;
+							char temp = check [i+1];
+							check [i+1] = check [i];
+							check[i] = temp;
+							if (words.find(check))
+								cout << check << ' ';
+							}
+						cout << endl << "Please hit return to Continue..." << endl;
+						cin.ignore();
+						break;
+
+					case ('Q'): //quit
+						run = false;
+						cout << "\033[2J\033[1;1H";
+						break;
+
+					default:
+						selection = true;
+						cout << endl << "Invalid input! Please hit return to Continue..." << endl;
+						cin.ignore();
+						break;
+				}
+			}
+		}
+	}
+////////////////////////////////// CREATING notfound.txt FILE
+	ofstream notfound;
+	notfound.open("notfound.txt");
+	while (!myBST.isEmpty()) {
+		string temp = myBST.findMin().word;
+		int temp1 = myBST.findMin().lineNum;
+		myBST.remove(myBST.findMin());
+		notfound << temp << ' ' << temp1 << endl;
+	}
+	notfound.close();
+///////////////////////////////// ADDING WORDS TO DICTIONARY
+	ofstream dictOut;
+	dictOut.open("dict.txt");
+	for (int i = 0; i < dict.size(); i++)
+		dictOut << dict.at(i) << endl;
+	dictOut.close();
+
+	return (0);
+}
+//////////////////////////////
+]0;nipper_cv@cobra:~/CSC245/Proj/Proj3[nipper_cv@cobra Proj3]$ c++ spellCheck.cpp
+]0;nipper_cv@cobra:~/CSC245/Proj/Proj3[nipper_cv@cobra Proj3]$ ./a.out myFile.txt
+[2J[1;1H!@#$%^&*(){} THE SPELL CHECKER PROGRAM !@#$%^&*(){}
+
+fiel on line 4 was not found in dictionary.
+
+A) Add the Word To Dictionary
+I) Ignore Word, and Skip Future References
+G) Go On To Next Word
+S) Search For A Suggested Spelling
+Q) Quit Spell Checking File
+
+Selection : S
+
+Suggested Spelling : file 
+Please hit return to Continue...
+
+[2J[1;1H!@#$%^&*(){} THE SPELL CHECKER PROGRAM !@#$%^&*(){}
+
+soem on line 4 was not found in dictionary.
+
+A) Add the Word To Dictionary
+I) Ignore Word, and Skip Future References
+G) Go On To Next Word
+S) Search For A Suggested Spelling
+Q) Quit Spell Checking File
+
+Selection : S
+
+Suggested Spelling : some 
+Please hit return to Continue...
+
+[2J[1;1H!@#$%^&*(){} THE SPELL CHECKER PROGRAM !@#$%^&*(){}
+
+tiem on line 6 was not found in dictionary.
+
+A) Add the Word To Dictionary
+I) Ignore Word, and Skip Future References
+G) Go On To Next Word
+S) Search For A Suggested Spelling
+Q) Quit Spell Checking File
+
+Selection : S
+
+Suggested Spelling : time 
+Please hit return to Continue...
+
+[2J[1;1H!@#$%^&*(){} THE SPELL CHECKER PROGRAM !@#$%^&*(){}
+
+egt on line 6 was not found in dictionary.
+
+A) Add the Word To Dictionary
+I) Ignore Word, and Skip Future References
+G) Go On To Next Word
+S) Search For A Suggested Spelling
+Q) Quit Spell Checking File
+
+Selection : S
+
+Suggested Spelling : get 
+Please hit return to Continue...
+
+[2J[1;1H!@#$%^&*(){} THE SPELL CHECKER PROGRAM !@#$%^&*(){}
+
+troulbe on line 6 was not found in dictionary.
+
+A) Add the Word To Dictionary
+I) Ignore Word, and Skip Future References
+G) Go On To Next Word
+S) Search For A Suggested Spelling
+Q) Quit Spell Checking File
+
+Selection : I
+[2J[1;1H!@#$%^&*(){} THE SPELL CHECKER PROGRAM !@#$%^&*(){}
+
+don on line 8 was not found in dictionary.
+
+A) Add the Word To Dictionary
+I) Ignore Word, and Skip Future References
+G) Go On To Next Word
+S) Search For A Suggested Spelling
+Q) Quit Spell Checking File
+
+Selection : I
+[2J[1;1H!@#$%^&*(){} THE SPELL CHECKER PROGRAM !@#$%^&*(){}
+
+worry on line 8 was not found in dictionary.
+
+A) Add the Word To Dictionary
+I) Ignore Word, and Skip Future References
+G) Go On To Next Word
+S) Search For A Suggested Spelling
+Q) Quit Spell Checking File
+
+Selection : A
+[2J[1;1H!@#$%^&*(){} THE SPELL CHECKER PROGRAM !@#$%^&*(){}
+
+abuot on line 8 was not found in dictionary.
+
+A) Add the Word To Dictionary
+I) Ignore Word, and Skip Future References
+G) Go On To Next Word
+S) Search For A Suggested Spelling
+Q) Quit Spell Checking File
+
+Selection : Q
+[2J[1;1H]0;nipper_cv@cobra:~/CSC245/Proj/Proj3[nipper_cv@cobra Proj3]$ exit
+exit
+
+Script done on Fri 07 Apr 2023 11:25:26 AM EDT

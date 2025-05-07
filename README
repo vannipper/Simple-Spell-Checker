@@ -1,0 +1,50 @@
+Project 3: The Spell Checker - by Van Nipper
+
+Objective: The objective of this program is to desgin a working spell checker, which takes in a stored dictionary,
+reads all of the entries into a Hash Table, reads in a user file from the command line, and checks to see if each
+of the words in the user file are present in the dictionary. If they are not, the program will prompt with a series
+of options for the user to choose. A word is defined as "a sequence of non-whitespace characters that is of length
+greater than or equal to 1."
+
+spellCheck algorithm: The spell check program begins by reading each of the words from a file called "dict.txt" into
+a vector. Two hash tables are then created: one for checking to see if a word exists in the current dictionary, and
+another for checking for added words that are specified by the user to ignore. After this, the user file is read in
+line-by-line and word-by-word, each word is converted into the proper format that the hash table can read, and a
+variety of checks are made (like if the word has been added to the ignore hash table, if the word is in the 
+dictionary, etc.). If the word is unrecognized, it is then added to a BinarySearchTree to be later exported into
+a not found file. Next, a series of options are presented to the user. This options include:
+
+'A' - Add to dictionary: This will add the not found word into the dictionary vector. The vector will write over the
+current dictionary file when either 'Q' (for quit) is selected, or there are no more spelling errors in the user
+file. Neither the dictionary nor the notfound.txt file will not be updated if the user quits the program prematurely 
+using control+C.
+
+'I' - Ignore word and Skip future references: Selecting this option will (as the name indicates) enable the program
+to skip over future occurances of a word that is misspelled in the same way. When this option is selected, the word
+is added to the ignore hash table.
+
+'G' - Go on to next word: This will skip this occurance of the misspelled word, but the program will flag the same
+word if it is misspelled the same way later in the file.
+
+'S' - Search for a suggested spelling: This will cause the program to search for anagram variations of the misspelled
+word to see if any of the anagram variations match a word that is in the dictionary hash table. It does this by
+flipping all variations of adjacent characters. If there are any (and even if there are multiple), the program will 
+display these as suggestions.
+
+'Q' - Quit Spell checking file: This will allow the user to exit the program. The dictionary file and not found file
+will both be updated.
+
+The program will continue to run naturally until either 'Q' is selected, or the end of the file. Once either of these
+things happen, the dictionary and not found files will be written over with any changes that might have taken place.
+
+Classes used: This program utilizes two other classes, as well as the vector from the STL.
+
+BinarySearchTree class: A binary search tree class is used with struct type BNode. A BNode contains a string for a
+misspelled word and an int for the line number the misspelled word was on. The Binary tree in this program stores all
+unique instances of misspelled words, then assists with exporting those words to the notfound.txt file.
+
+HashTable class: In this program, the hash tables store the dictionary for quick access and the words indicated by
+the user to ignore (in separate hash tables). Hash tables are useful because the allow extremely quick searching.
+
+Vectors: This program also uses a vector for appending entries to the dictionary, not for searching for entries in 
+the dictionary.

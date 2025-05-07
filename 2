@@ -1,0 +1,164 @@
+using namespace std;
+
+#include <iostream>
+#include <sstream>
+#include <cctype>
+#include <vector>
+#include "HashTable.h"
+#include "BinarySearchTree.h"
+
+
+/////////////////////////// USING LINELIST FOR STORING DICTIONARY (methods at the bottom)
+void addWord(string compare);
+void checkForPalendrome(string msword); //for debugging
+
+/////////////////////////// BINARY SEARCH TREE FOR MISSPELLED WORDS
+struct BNode {
+	string word;
+	int lineNum;
+	bool operator < (BNode otherStruct) const {
+		return (word < otherStruct.word);
+	}
+};
+
+ostream & operator << (ostream & out, BNode & temp) {
+	out << temp.word << " " << temp.lineNum;
+	return out;
+}
+typedef BinarySearchTree<BNode> BST;
+
+int main (int argc, char *argv[]) {
+
+/////////////////////////// READ DICT INTO HASH TABLE
+	ifstream dictionaryIn; string newLine; int linenum;
+	dictionaryIn.open("dict1.txt");
+	
+	vector<string> dict; //pointer to dictionary linked list.
+	while (dictionaryIn >> newLine) {
+		dict.insert(newLine);
+	}
+
+	dictionaryIn.close();
+
+	linenum = dict.size();
+	HashTable words(linenum);
+	HashTable ignore(linenum/2); //for ignore
+
+	for (int i = 0; i < dict.size(); i++)
+		words.insert(msword);
+
+/////////////////////////// FIND MISPELLED WORD
+	bool run = true; linenum = 0; string msword; //for run loop
+	bool selection; string input; char c; //for selection loop
+        BNode nf = {"ZZZ", -1}; BST myBST(nf); //for BST
+
+	ifstream fileIn;
+	fileIn.open(argv[1]);
+
+	while (run && getline(fileIn, newLine)) { //reads in line-by-line
+		linenum++;
+		istringstream newWords(newLine);
+
+		while (run && newWords >> msword) { //reads in word-by-word
+			selection = true; //by default
+			for (int i = 0; i < msword.size(); i++) { //formats msword and checks if it is a number
+				msword[i] = tolower(msword[i]);
+				if (isalpha(msword[i]) == 0)
+					msword.erase(i);
+			}
+			if (msword.size() == 0)
+				selection = false;
+
+			else if (words.find(msword))
+				selection = false;
+
+			else if (ignore.find(msword))
+				selection = false;
+
+			else { //insert into bst if the word is not found.
+				if (myBST.find(msword) == "ZZZ") {
+					BNode bN = {msword, linenum};
+					myBST.insert(bN);
+				}
+			}
+
+/////////////////////////// MAIN
+			while (selection) {
+				selection = false;
+				cout << "\033[2J\033[1;1H";
+				cout << "!@#$%^&*(){} THE SPELL CHECKER PROGRAM !@#$%^&*(){}" << endl << endl;
+				cout << msword << " on line " << linenum << " was not found in dictionary." << endl << endl;
+				cout << "A) Add the Word To Dictionary" << endl;
+				cout << "I) Ignore Word, and Skip Future References" << endl;
+				cout << "G) Go On To Next Word" << endl;
+				cout << "S) Search For A Suggested Spelling" << endl;
+				cout << "Q) Quit Spell Checking File" << endl << endl;
+				cout << "Selection : ";
+				getline(cin, input);
+				c = toupper(input[0]);
+
+				switch (c) {
+					case ('A'): //add to dictionary
+						ignore.insert(msword);
+						addWord(msword);						
+						break;
+
+					case ('I'): //ignore all future cases
+						ignore.insert(msword);
+						break;
+
+					case ('G'): //go to next word (ignore)
+						break;
+
+					case ('S'): //search for suggested correction
+						cout << endl << "Suggested Spelling : ";
+						for (int i = 0; i < (msword.size() - 1); i++) {
+							string check = msword;
+							char temp = check [i+1];
+							check [i+1] = check [i];
+							check[i] = temp;
+							if (words.find(check))
+								cout << check << ' ';
+							}
+						cout << endl << "Please hit return to Continue..." << endl;
+						cin.ignore();
+						break;
+
+					case ('Q'): //quit
+						run = false;
+						cout << "\033[2J\033[1;1H";
+						break;
+
+					default:
+						selection = true;
+						cout << endl << "Invalid input! Please hit return to Continue..." << endl;
+						cin.ignore();
+						break;
+				}
+			}
+		}
+	}
+////////////////////////////////// CREATING notfound.txt FILE
+	/*
+	ofstream notfound;
+	notfound.open("notfound.txt");
+	while (!t.isEmpty()) {
+		string temp = t.findMin();
+		t.removeMin();
+		getline(temp, notfound);
+	}
+	notfound.close(); */
+	return (0);
+}
+
+////////////////////////////////// FUNCTION BODIES
+void addWord(vector<string> & dict, string compare) {
+	for (int i = 0; i < dict.size(); i++) {
+		if (compare > dict.at(i)) {
+			dict.insert(compare, i);
+			break;
+		}
+	}
+}
+
+//////////////////////////////
